@@ -1,50 +1,37 @@
-// Import necessary modules
-const Discord = require("discord.js");
-const express = require("express");
-const path = require("path");
+// index.js
+const { Client, GatewayIntentBits } = require('discord.js');
+const express = require('express');
+require('dotenv').config();
 
-// Create the bot and the Express app
-const client = new Discord.Client({
-  intents: [
-    Discord.GatewayIntentBits.Guilds,
-    Discord.GatewayIntentBits.GuildMessages,
-    Discord.GatewayIntentBits.MessageContent,
-  ],
-});
+// Initialize Express app
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Replace with your bot token from the Discord Developer Portal
-const TOKEN = "MTMwNTQyMTQ1Mjk0MTQ1OTQ3Nw.Gucjmr._jk_por49aFfciamXbFVq7OYXhG_rg0gAr6Xvs"; // Replace with your bot token
-
-// Serve the HTML file at the root URL
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+// Set up a simple HTTP endpoint to check the bot status
+app.get('/', (req, res) => {
+  res.send('Discord Bot is online and running!');
 });
 
 // Start the Express server
-app.listen(3000, () => {
-  console.log("Express server is running on port 3000");
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// Bot ready event
-client.on("ready", () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity("Serving and Botting!", { type: Discord.ActivityType.Watching });
+// Initialize Discord bot
+const bot = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
 
-// Example command
-client.on("messageCreate", (message) => {
-  if (message.author.bot) return;
+// Login the bot with token from environment variables
+bot.login(process.env.DISCORD_TOKEN);
 
-  if (message.content === "!hello") {
-    message.channel.send(`Hello, ${message.author.username}!`);
+// Set up bot event listeners
+bot.on('ready', () => {
+  console.log(`Logged in as ${bot.user.tag}!`);
+});
+
+bot.on('messageCreate', message => {
+  if (message.content === '!ping') {
+    message.reply('Pong!');
   }
 });
-
-// Error handling for login issues
-client.on("error", (error) => {
-  console.error("Discord client encountered an error:", error);
-});
-
-// Log in to Discord with the bot token
-client.login(TOKEN).catch((err) => console.error("Failed to login:", err));
